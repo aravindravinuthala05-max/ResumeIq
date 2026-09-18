@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block title %}ResumeIQ - Analysis Report{% endblock %}
+
+{% block content %}
+<div class="container report-page">
+    <section class="report-header">
+        <h1 id="reportTitle"><i class="fas fa-chart-pie"></i> Resume Analysis Report</h1>
+        <p id="resumeName" class="resume-filename"></p>
+        <p id="timestamp" class="timestamp"></p>
+    </section>
+
+    <nav class="dashboard-index" aria-label="Report sections">
+        <a href="#resume-overview">Overview</a>
+        <a href="#ats-match">ATS / JD Match</a>
+        <a href="#strengths-section">Strengths</a>
+        <a href="#priority-improvements">Priority Improvements</a>
+        <a href="#skills-section">Skills</a>
+        <a href="#rewriter-section">Rewriter</a>
+        <a href="#interview-section">Interview</a>
+        <a href="#download-report">Download Report</a>
+    </nav>
+
+    <section id="resume-overview" class="overview-section" data-result-view="details" data-section="dashboard" aria-labelledby="overviewHeading">
+        <div class="section-card">
+            <div class="overview-heading">
+                <div>
+                    <p class="section-kicker">Resume Overview</p>
+                    <h2 id="overviewHeading">Your resume intelligence report</h2>
+                </div>
+                <span id="overviewJdStatus" class="overview-status"></span>
+            </div>
+            <div class="overview-grid">
+                <article class="overview-item">
+                    <span class="overview-label">Strengths</span>
+                    <div id="overviewStrengths" class="overview-value"></div>
+                </article>
+                <article class="overview-item">
+                    <span class="overview-label">Priority improvement</span>
+                    <div id="overviewPriority" class="overview-value"></div>
+                </article>
+                <article class="overview-item">
+                    <span class="overview-label">Match signal</span>
+                    <div id="overviewMatch" class="overview-value"></div>
+                </article>
+            </div>
+            <div class="overview-actions">
+                <button type="button" class="overview-action" onclick="showSection('insights')"><i class="fas fa-lightbulb"></i> Review improvements</button>
+                <button type="button" class="overview-action" onclick="showSection('rewriter')"><i class="fas fa-pen-to-square"></i> Open rewriter</button>
+                <button type="button" class="overview-action" onclick="showSection('interview')"><i class="fas fa-microphone-alt"></i> Prepare interview</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="resume-health" class="resume-health-section" data-result-view="details" data-section="dashboard" aria-labelledby="healthHeading">
+        <div class="section-card">
+            <p class="section-kicker">Resume Health</p>
+            <h2 id="healthHeading">Your current report at a glance</h2>
+            <div class="health-grid">
+                <article class="health-item">
+                    <span class="health-label">ATS Score</span>
+                    <strong id="healthAtsScore">Unknown</strong>
+                </article>
+                <article class="health-item">
+                    <span class="health-label">JD Match</span>
+                    <strong id="healthJdMatch">Unknown</strong>
+                </article>
+                <article class="health-item">
+                    <span class="health-label">Priority Improvements</span>
+                    <strong id="healthPriorityCount">Unknown</strong>
+                </article>
+                <article class="health-item">
+                    <span class="health-label">Rewrite Opportunities</span>
+                    <strong id="healthRewriteCount">Available when opened</strong>
+                </article>
+                <article class="health-item">
+                    <span class="health-label">Interview Preparation</span>
+                    <strong id="healthInterviewCount">Unknown</strong>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="ats-match" class="diagnostic-section" data-result-view="details" data-section="dashboard" aria-labelledby="atsHeading">
+        <div class="score-card">
+            <div class="circular-progress">
+                <canvas id="scoreCanvas" width="200" height="200"></canvas>
+                <div class="score-value" id="scoreValue">0%</div>
+            </div>
+            <div class="score-info">
+                <p class="section-kicker">ATS / JD Match</p>
+                <h2 id="scoreStatus">Analyzing...</h2>
+                <p id="scoreDescription"></p>
+            </div>
+        </div>
+        <div id="detailed-analysis" class="score-breakdown">
+            <h2 id="atsHeading">Score Breakdown</h2>
+            <div class="breakdown-grid">
+            <div class="breakdown-item">
+                <div class="breakdown-icon">🎯</div>
+                <h3>Skills</h3>
+                <div class="progress-bar">
+                    <div id="skillsProgress" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <p id="skillsScore">0/40</p>
+            </div>
+            <div class="breakdown-item">
+                <div class="breakdown-icon">🚀</div>
+                <h3>Projects</h3>
+                <div class="progress-bar">
+                    <div id="projectsProgress" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <p id="projectsScore">0/15</p>
+            </div>
+            <div class="breakdown-item">
+                <div class="breakdown-icon">💼</div>
+                <h3>Experience</h3>
+                <div class="progress-bar">
+                    <div id="experienceProgress" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <p id="experienceScore">0/15</p>
+            </div>
+            <div class="breakdown-item">
+                <div class="breakdown-icon">🎓</div>
+                <h3>Education</h3>
+                <div class="progress-bar">
+                    <div id="educationProgress" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <p id="educationScore">0/10</p>
+            </div>
+            <div class="breakdown-item">
+                <div class="breakdown-icon">📋</div>
+                <h3>Sections</h3>
+                <div class="progress-bar">
+                    <div id="sectionsProgress" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <p id="sectionsScore">0/10</p>
+            </div>
+            <div class="breakdown-item">
+                <div class="breakdown-icon">📐</div>
+                <h3>Formatting</h3>
+                <div class="progress-bar">
+                    <div id="formattingProgress" class="progress-fill" style="width: 0%"></div>
+                </div>
+                <p id="formattingScore">0/10</p>
+            </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="strengths-section" class="dashboard-section strengths-section" data-result-view="details" data-section="strengths" aria-labelledby="strengthsHeading">
+        <div class="section-card">
+            <p class="section-kicker">What is working</p>
+            <h2 id="strengthsHeading"><i class="fas fa-circle-check"></i> Strengths</h2>
+            <div id="strengths" class="recommendations-list"></div>
+        </div>
+    </section>
+
+    <section id="priority-improvements" class="dashboard-section priority-section" data-result-view="details" data-section="insights" aria-labelledby="priorityHeading">
+        <div class="section-card">
+            <p class="section-kicker">What to address first</p>
+            <h2 id="priorityHeading"><i class="fas fa-bullseye"></i> Priority Improvements</h2>
+            <div id="priorityRecommendations" class="recommendations-list"></div>
+        </div>
+    </section>
+
+    <section id="skills-section" class="dashboard-section skills-section" data-result-view="details" data-section="skills" aria-labelledby="skillsHeading">
+        <div class="section-card">
+            <p class="section-kicker">Confirmed and missing alignment</p>
+            <h2 id="skillsHeading"><i class="fas fa-tags"></i> Skills</h2>
+            <div class="skills-columns">
+                <div>
+                    <h3 class="skills-subheading"><i class="fas fa-file-lines"></i> Resume Skills</h3>
+                    <div id="resumeSkills" class="skills-list"></div>
+                </div>
+                <div>
+                    <h3 class="skills-subheading"><i class="fas fa-bullseye"></i> JD-Matched Skills</h3>
+                    <div id="matchedSkills" class="skills-list"></div>
+                </div>
+                <div>
+                    <h3 class="skills-subheading"><i class="fas fa-times-circle"></i> Missing JD Skills</h3>
+                    <p class="skills-helper">Not currently supported by your resume.</p>
+                    <div id="missingSkills" class="skills-list"></div>
+                </div>
+                <div>
+                    <h3 class="skills-subheading"><i class="fas fa-link"></i> Evidence-Backed Skills</h3>
+                    <div id="evidenceSkills" class="skills-list"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="rewriter-section" class="dashboard-section rewriter-section" data-result-view="details" data-section="rewriter">
+        <div class="section-card">
+            <div class="rewriter-heading">
+                <div>
+                    <p class="section-kicker">Factual improvement preview</p>
+                    <h2><i class="fas fa-pen-to-square"></i> Resume Rewriter</h2>
+                    <p class="rewriter-note">Rule-based factual rewrite preview. No external AI provider is configured.</p>
+                </div>
+                <span id="rewriterProvider" class="rewriter-provider">Ready</span>
+            </div>
+            <div id="rewriterStatus" class="rewriter-status" aria-live="polite"></div>
+            <div id="rewrites" class="rewrites-list"></div>
+        </div>
+    </section>
+
+    <section id="interview-section" class="dashboard-section interview-section" data-result-view="details" data-section="interview">
+        <div class="section-card">
+            <p class="section-kicker">Prepare with your actual resume</p>
+            <h2><i class="fas fa-microphone-alt"></i> Interview Preparation</h2>
+            <div id="interviewQuestions" class="questions-list"></div>
+        </div>
+    </section>
+
+    <section id="recommendations-section" class="dashboard-section recommendations-section" data-result-view="details" data-section="insights" aria-labelledby="recommendationsHeading">
+        <div class="section-card">
+            <p class="section-kicker">Additional guidance</p>
+            <h2 id="recommendationsHeading"><i class="fas fa-lightbulb"></i> Remaining Recommendations</h2>
+            <div id="recommendations" class="recommendations-list"></div>
+        </div>
+    </section>
+
+    <section id="resume-details" class="resume-details-section" aria-labelledby="detailsHeading">
+        <div class="resume-details-heading">
+            <div>
+                <p class="section-kicker">Supporting analysis</p>
+                <h2 id="detailsHeading">Resume Details</h2>
+            </div>
+            <span>Full extracted resume information</span>
+        </div>
+
+        <section class="info-section" data-result-view="details" data-section="dashboard">
+            <div class="section-card">
+                <h2><i class="fas fa-id-card"></i> Contact Information</h2>
+                <div id="contactInfo" class="info-grid"></div>
+            </div>
+        </section>
+        <section id="education-details" class="info-section" data-result-view="details" data-section="education">
+            <div class="section-card">
+                <h2><i class="fas fa-graduation-cap"></i> Education</h2>
+                <div id="educationInfo" class="info-details"></div>
+            </div>
+        </section>
+        <section id="experience-details" class="info-section" data-result-view="details" data-section="experience">
+            <div class="section-card">
+                <h2><i class="fas fa-briefcase"></i> Experience</h2>
+                <div id="experienceInfo" class="info-details"></div>
+            </div>
+        </section>
+        <section id="projects-details" class="info-section" data-result-view="details" data-section="projects">
+            <div class="section-card">
+                <h2><i class="fas fa-rocket"></i> Projects</h2>
+                <div id="projectsInfo" class="info-details"></div>
+            </div>
+        </section>
+        <section class="info-section" data-result-view="details" data-section="dashboard">
+            <div class="section-card">
+                <h2><i class="fas fa-certificate"></i> Certifications</h2>
+                <div id="certificationsInfo" class="info-details"></div>
+            </div>
+        </section>
+        <section class="info-section" data-result-view="details" data-section="dashboard">
+            <div class="section-card">
+                <h2><i class="fas fa-trophy"></i> Achievements</h2>
+                <div id="achievementsInfo" class="info-details"></div>
+            </div>
+        </section>
+        <section class="info-section" data-result-view="details" data-section="dashboard">
+            <div class="section-card">
+                <h2><i class="fas fa-language"></i> Languages</h2>
+                <div id="languagesInfo" class="info-details"></div>
+            </div>
+        </section>
+        <section id="formatting-details" class="formatting-section" data-result-view="details" data-section="formatting">
+            <div class="section-card">
+                <h2><i class="fas fa-file-alt"></i> Formatting Analysis</h2>
+                <div id="formattingInfo" class="formatting-details"></div>
+            </div>
+        </section>
+    </section>
+
+    <section id="download-report" class="download-report-section" aria-labelledby="downloadHeading">
+        <div class="section-card">
+            <p class="section-kicker">Take the report with you</p>
+            <h2 id="downloadHeading"><i class="fas fa-download"></i> Download Report</h2>
+            <p>Save a readable PDF of this analysis and its recommendations.</p>
+            <button type="button" class="overview-action download-action" data-download-report onclick="downloadReport()">
+                <i class="fas fa-download"></i> Download PDF
+            </button>
+        </div>
+    </section>
+
+    <section class="dashboard-nav" aria-label="Legacy report navigation">
+        <button type="button" class="nav-btn active" data-section="dashboard" onclick="showSection('dashboard', this)">
+            <i class="fas fa-chart-pie"></i> Overview
+        </button>
+        <button type="button" class="nav-btn" data-section="insights" onclick="showSection('insights', this)">
+            <i class="fas fa-lightbulb"></i> Smart Insights
+        </button>
+        <button type="button" class="nav-btn" data-section="interview" onclick="showSection('interview', this)">
+            <i class="fas fa-microphone-alt"></i> Interview Questions
+        </button>
+        <button type="button" class="nav-btn" data-section="rewriter" onclick="showSection('rewriter', this)">
+            <i class="fas fa-pen-to-square"></i> Resume Rewriter
+        </button>
+        <button type="button" class="nav-btn" data-section="formatting" onclick="showSection('formatting', this)">
+            <i class="fas fa-file-alt"></i> Formatting
+        </button>
+        <button type="button" class="nav-btn" data-section="education" onclick="showSection('education', this)">
+            <i class="fas fa-graduation-cap"></i> Education
+        </button>
+        <button type="button" class="nav-btn" data-section="experience" onclick="showSection('experience', this)">
+            <i class="fas fa-briefcase"></i> Experience
+        </button>
+        <button type="button" class="nav-btn" data-section="projects" onclick="showSection('projects', this)">
+            <i class="fas fa-rocket"></i> Projects
+        </button>
+        <button type="button" class="nav-btn" data-section="skills" onclick="showSection('skills', this)">
+            <i class="fas fa-check-circle"></i> Skills
+        </button>
+        <button type="button" class="nav-btn" onclick="document.getElementById('download-report')?.scrollIntoView({ behavior: 'smooth' })">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/result.js') }}"></script>
+{% endblock %}

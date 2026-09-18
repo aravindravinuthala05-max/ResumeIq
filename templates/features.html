@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Features | ResumeIQ{% endblock %}
+{% block body_class %}features-page{% endblock %}
+
+{% block content %}
+<section class="features-hero">
+    <p class="features-eyebrow">Intelligent resume analysis</p>
+    <h1>Everything you need to strengthen your resume.</h1>
+    <p>ResumeIQ turns resume data and job requirements into clear signals, targeted feedback, and interview-ready insights.</p>
+</section>
+
+<section class="features-grid" aria-label="ResumeIQ features">
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-gauge-high"></i></span><h2>ATS Score</h2><p>Measure how well your resume aligns with automated applicant tracking systems.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-file-lines"></i></span><h2>Resume Parsing</h2><p>Extract important resume information into a clear, structured analysis.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-graduation-cap"></i></span><h2>Education Analysis</h2><p>Review academic qualifications, institutions, and education details.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-briefcase"></i></span><h2>Experience Analysis</h2><p>Evaluate professional experience, internships, roles, and career relevance.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-diagram-project"></i></span><h2>Projects Analysis</h2><p>Highlight projects that demonstrate practical skills and measurable impact.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-puzzle-piece"></i></span><h2>Skill Matching</h2><p>Compare your skills with the target job description to identify alignment.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-magnifying-glass"></i></span><h2>Missing Skills</h2><p>Surface important skills and keywords that are absent from your resume.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-align-left"></i></span><h2>Formatting Analysis</h2><p>Check structural clarity and formatting choices that affect ATS readability.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-comments"></i></span><h2>Interview Questions</h2><p>Prepare with role-relevant interview questions based on your resume.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-lightbulb"></i></span><h2>Recommendations</h2><p>Receive practical suggestions to improve relevance, clarity, and impact.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-file-pdf"></i></span><h2>PDF Report</h2><p>Download a polished report containing your complete resume analysis.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-trophy"></i></span><h2>Achievements</h2><p>Identify achievements that strengthen the evidence behind your experience.</p></article>
+    <article class="feature-card"><span class="feature-icon"><i class="fas fa-language"></i></span><h2>Languages</h2><p>Recognize programming, scripting, and spoken languages in your profile.</p></article>
+</section>
+
+<div class="back-home-wrap features-back-home">
+    <a href="{{ url_for('home') }}" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Back Home</a>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}ResumeIQ - AI Resume Intelligence Platform{% endblock %}
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+<section id="uploadSection" class="home-layout">
+    <div class="home-experience fade-in-up">
+        <header class="home-header">
+            <p class="hero-kicker">ResumeIQ</p>
+            <h1 class="hero-title">AI Resume Intelligence Platform</h1>
+            <p class="hero-subtitle">Turn your resume and target job description into focused, actionable career insights.</p>
+        </header>
+
+        <form id="uploadForm" class="upload-form" action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="resume">Upload Resume</label>
+                <div class="upload-box" id="resumeDropZone">
+                    <input type="file" id="resume" name="resume" accept="application/pdf,.pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx" hidden>
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Drag & Drop Your Resume</h3>
+                        <p>or <span class="upload-link">click to browse</span></p>
+                        <p class="file-name" id="resumeFileName">No file selected</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="jobDescription">Job Description</label>
+                <textarea id="jobDescription" name="job_description" rows="8" placeholder="Paste the job description here..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large btn-animated">
+                <i class="fas fa-chart-line"></i>
+                Analyze Resume
+            </button>
+        </form>
+
+        <div id="formMessage" class="form-message" aria-live="polite"></div>
+
+        <div id="loadingSpinner" class="analysis-loading" style="display: none;" role="status" aria-live="polite" aria-label="Resume analysis in progress">
+            <div class="analysis-loading-orbit"><i class="fas fa-brain"></i></div>
+            <p class="analysis-loading-eyebrow">ResumeIQ is working</p>
+            <h2>Building your resume intelligence report</h2>
+            <p class="analysis-loading-copy">Please keep this page open while we securely process your resume.</p>
+            <ol class="analysis-progress" aria-label="Analysis stages">
+                <li class="is-active"><i class="fas fa-spinner"></i><span>Uploading Resume</span></li>
+                <li><i class="fas fa-clock"></i><span>Extracting Text</span></li>
+                <li><i class="fas fa-clock"></i><span>Analyzing Resume</span></li>
+                <li><i class="fas fa-clock"></i><span>Calculating ATS</span></li>
+                <li><i class="fas fa-clock"></i><span>Generating Recommendations</span></li>
+                <li><i class="fas fa-clock"></i><span>Preparing Report</span></li>
+            </ol>
+        </div>
+    </div>
+</section>
+{% endblock %}

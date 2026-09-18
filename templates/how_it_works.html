@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}How It Works | ResumeIQ{% endblock %}
+{% block body_class %}how-it-works-page{% endblock %}
+
+{% block content %}
+<section class="workflow-hero">
+    <p class="workflow-eyebrow">A clear path to a better resume</p>
+    <h1>From upload to career-ready insight.</h1>
+    <p>ResumeIQ guides your resume through a focused intelligence workflow tailored to your target role.</p>
+</section>
+
+<section class="workflow-timeline" aria-label="How ResumeIQ works">
+    <article class="workflow-step"><div class="workflow-marker"><span>01</span><i class="fas fa-cloud-arrow-up"></i></div><div class="workflow-content"><p>Step 1</p><h2>Upload Resume</h2><span>Securely add your resume as a PDF to begin your analysis.</span></div></article>
+    <div class="workflow-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+    <article class="workflow-step"><div class="workflow-marker"><span>02</span><i class="fas fa-keyboard"></i></div><div class="workflow-content"><p>Step 2</p><h2>Enter Job Description</h2><span>Paste the requirements for the role you want to target.</span></div></article>
+    <div class="workflow-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+    <article class="workflow-step"><div class="workflow-marker"><span>03</span><i class="fas fa-file-lines"></i></div><div class="workflow-content"><p>Step 3</p><h2>Extract Resume</h2><span>ResumeIQ identifies your skills, education, experience, and projects.</span></div></article>
+    <div class="workflow-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+    <article class="workflow-step"><div class="workflow-marker"><span>04</span><i class="fas fa-chart-line"></i></div><div class="workflow-content"><p>Step 4</p><h2>ATS Analysis</h2><span>Your resume is evaluated for ATS relevance and job-description alignment.</span></div></article>
+    <div class="workflow-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+    <article class="workflow-step"><div class="workflow-marker"><span>05</span><i class="fas fa-brain"></i></div><div class="workflow-content"><p>Step 5</p><h2>Resume Intelligence</h2><span>Explore the signals behind your resume's strengths and opportunities.</span></div></article>
+    <div class="workflow-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+    <article class="workflow-step"><div class="workflow-marker"><span>06</span><i class="fas fa-lightbulb"></i></div><div class="workflow-content"><p>Step 6</p><h2>Recommendations</h2><span>Receive practical suggestions to improve clarity, impact, and relevance.</span></div></article>
+    <div class="workflow-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+    <article class="workflow-step"><div class="workflow-marker"><span>07</span><i class="fas fa-comments"></i></div><div class="workflow-content"><p>Step 7</p><h2>Interview Questions</h2><span>Prepare with role-relevant interview questions drawn from your profile.</span></div></article>
+    <div class="workflow-arrow" aria-hidden="true"><i class="fas fa-arrow-down"></i></div>
+    <article class="workflow-step"><div class="workflow-marker"><span>08</span><i class="fas fa-file-arrow-down"></i></div><div class="workflow-content"><p>Step 8</p><h2>Download Report</h2><span>Save a complete PDF report of your personalized resume analysis.</span></div></article>
+</section>
+
+<div class="back-home-wrap workflow-back-home">
+    <a href="{{ url_for('home') }}" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Back Home</a>
+</div>
+{% endblock %}

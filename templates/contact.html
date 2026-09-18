@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact | ResumeIQ{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <h1>Contact ResumeIQ</h1>
+    <p>Reach out for support, feedback, or project collaboration.</p>
+</section>
+
+<section class="contact-grid">
+    <div class="contact-card">
+        <h2>Get Support</h2>
+        <p>Email: <a href="mailto:support@resumeiq.ai">support@resumeiq.ai</a></p>
+        <p>Response time: Within 24 hours.</p>
+    </div>
+    <div class="contact-card">
+        <h2>Project Owner</h2>
+        <p>Professional AI Resume Analyzer built as a final year engineering major project.</p>
+        <p>Designed for industry-level polish and complete navigation.</p>
+    </div>
+    <div class="contact-card">
+        <h2>Next Step</h2>
+        <p>Upload your resume and start analyzing today.</p>
+        <a class="btn btn-primary" href="{{ url_for('upload') }}">Analyze Resume</a>
+    </div>
+</section>
+{% endblock %}
