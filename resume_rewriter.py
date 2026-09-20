@@ -9,15 +9,10 @@ from certification_analyzer import analyze_certifications
 from education_analyzer import analyze_education
 from experience_analyzer import analyze_experience
 from language_analyzer import analyze_languages
+from resume_sections import SECTION_ALIASES as ALL_SECTION_ALIASES, extract_section_lines, is_contact_line, normalize_heading, section_for_heading
 
 
-SECTION_ALIASES = {
-    "summary": {"summary", "professional summary", "profile", "objective"},
-    "experience": {"experience", "work experience", "employment", "professional experience"},
-    "project": {"project", "projects", "academic projects"},
-    "skills": {"skill", "skills", "technical skills", "technologies"},
-    "education": {"education", "academic background"},
-}
+SECTION_ALIASES = {"project" if key == "projects" else key: value for key, value in ALL_SECTION_ALIASES.items()}
 
 ACTION_REPLACEMENTS = (
     (r"\bworked on\b", "contributed to"),
@@ -118,17 +113,10 @@ def _section_for_heading(line):
 
 def _extract_sections(resume_text):
     sections = {section: [] for section in SUPPORTED_SECTIONS}
-    current = None
-    for raw_line in resume_text.splitlines():
-        line = raw_line.strip()
-        if not line:
-            continue
-        heading = _section_for_heading(line)
-        if heading:
-            current = heading
-            continue
-        if current in sections and not _looks_like_heading(line):
-            sections[current].append(line)
+    for section, lines in extract_section_lines(resume_text).items():
+        target = "project" if section == "projects" else section
+        if target in sections:
+            sections[target].extend(line for line in lines if not is_contact_line(line))
     return sections
 
 
@@ -150,17 +138,45 @@ def _rewrite_line(line, section):
 
 
 def _rewrite_skills(line):
+    if is_contact_line(line):
+        return line.strip()
+    category, separator, values = line.partition(":")
+    if separator and _is_skill_category(category) and _is_skill_values(values):
+        return f"{category.strip()}: {', '.join(part.strip() for part in re.split(r'[,;|]', values) if part.strip())}"
+    if not _is_skill_values(line):
+        return line.strip()
     parts = [part.strip() for part in re.split(r"[,;|]", line) if part.strip()]
     if len(parts) < 2:
         return line.strip()
     return "Technical skills: " + ", ".join(parts)
 
 
+def _is_skill_category(value):
+    return bool(re.fullmatch(r"(?:programming )?languages?|databases?|libraries?|frameworks?|tools?|cloud|data science(?: & ml)?|data visualization(?: & analytics)?|web development|technologies?|technical expertise", value.strip(), re.IGNORECASE))
+
+
+def _is_skill_values(value):
+    text = value.strip()
+    if not text or is_contact_line(text) or re.search(r"\b(?:developed|implemented|worked|built|improved|completed|achieved|reducing|experience|project|internship)\b", text, re.IGNORECASE):
+        return False
+    parts = [part.strip() for part in re.split(r"[,;|]", text) if part.strip()]
+    known_skill = re.compile(r"\b(?:python|java|c\+\+|c#|sql|aws|azure|gcp|docker|kubernetes|react|angular|flask|django|fastapi|pandas|numpy|pytorch|tensorflow|html|css|javascript|typescript|git|excel|matplotlib|scikit-?learn|openai api|jupyter|visual studio code)\b", re.IGNORECASE)
+    if len(parts) == 1:
+        return bool(known_skill.search(text))
+    return all(len(part.split()) <= 4 and bool(known_skill.search(part)) for part in parts)
+
+
 def _rewrite_education(line):
+    if not _looks_like_education(line):
+        return line.strip()
     parts = [part.strip() for part in line.split(",") if part.strip()]
     if len(parts) < 2:
         return line.strip()
     return " | ".join(parts)
+
+
+def _looks_like_education(line):
+    return bool(re.search(r"\b(?:b\.?\s?(?:tech|sc|e|ca)|m\.?\s?(?:tech|sc|ca)|bachelor|master|college|university|school|cgpa|gpa|ssc|intermediate)\b", line, re.IGNORECASE))
 
 
 def _reason_for(section):

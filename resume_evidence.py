@@ -1,18 +1,9 @@
 """Deterministic, traceable evidence extracted from an uploaded resume."""
 
 import re
+from resume_sections import SECTION_ALIASES, clean_lines as _clean_lines, extract_section_lines, is_contact_line
 
 
-SECTION_ALIASES = {
-    "summary": {"summary", "professional summary", "profile", "objective"},
-    "experience": {"experience", "work experience", "employment", "professional experience"},
-    "projects": {"project", "projects", "personal projects", "academic projects"},
-    "skills": {"skill", "skills", "technical skills", "technologies", "technical expertise"},
-    "education": {"education", "academic background"},
-    "certifications": {"certification", "certifications", "certificates"},
-    "achievements": {"achievement", "achievements", "awards"},
-    "languages": {"languages", "programming languages"},
-}
 
 TECHNOLOGY_TYPES = {
     "python", "java", "javascript", "typescript", "c", "c++", "c#", "ruby", "php", "go", "rust",
@@ -36,26 +27,8 @@ DATE_PATTERN = re.compile(
 )
 
 
-def _clean_lines(resume_text):
-    return [line.strip() for line in (resume_text or "").splitlines() if line.strip()]
-
-
-def _heading(line):
-    return re.sub(r"[^a-z ]", "", line.lower()).strip()
-
-
 def _section_lines(resume_text):
-    sections = {section: [] for section in SECTION_ALIASES}
-    current = None
-    for line in _clean_lines(resume_text):
-        normalized = _heading(line)
-        found = next((section for section, aliases in SECTION_ALIASES.items() if normalized in aliases), None)
-        if found:
-            current = found
-            continue
-        if current:
-            sections[current].append(line)
-    return sections
+    return extract_section_lines(resume_text)
 
 
 def _contains(text, value):
@@ -184,6 +157,8 @@ def build_resume_evidence(
         language_values.extend((languages or {}).get(key, []))
     evidence["languages"].extend(_records(language_values, "language", "languages", "\n".join(sections["languages"]) or resume_text, "language_analyzer"))
     for line in sections["skills"]:
+        if is_contact_line(line):
+            continue
         skills = [part.strip() for part in re.split(r"[,;|]", line) if part.strip()]
         evidence["skills"].extend(_records(skills, "skill", "skills", line, "resume"))
     evidence["technologies"] = _technology_records(resume_text, sections, languages)
