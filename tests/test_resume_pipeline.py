@@ -379,7 +379,7 @@ def test_rewriter_omits_unchanged_content_instead_of_faking_improvement():
     result = rewrite_resume("SUMMARY\nExperienced Python developer.", "Python")
 
     assert result["rewrites"] == []
-    assert "No supported rewrite candidates" in result["message"]
+    assert "No improvement required" in result["message"]
 
 
 def test_rewriter_keeps_multiple_sections_independent():
@@ -490,7 +490,7 @@ def test_rewriter_handles_missing_sections_and_unsupported_candidates():
     result = rewrite_resume("CONTACT\nfictional@example.com\n", "Python")
 
     assert result["rewrites"] == []
-    assert "No supported rewrite candidates" in result["message"]
+    assert "No improvement required" in result["message"]
 
 
 def test_rewrite_endpoint_accepts_valid_request(app_client):

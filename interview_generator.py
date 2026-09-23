@@ -91,7 +91,28 @@ def _add_question(questions, question, category, source, evidence=None, jd_match
     })
 
 
-def _project_evidence(resume_text):
+def _project_evidence(resume_text, resume_evidence=None):
+    """Prefer project records already provenanced by Resume Evidence.
+
+    The legacy section parser remains as a fallback for callers that do not yet
+    provide evidence, preserving the existing question shape and categories.
+    """
+    records = (resume_evidence or {}).get("projects", [])
+    evidence = []
+    for record in records:
+        if not isinstance(record, dict) or record.get("type") != "project":
+            continue
+        name = str(record.get("value") or "").strip()
+        line = str(record.get("source_text") or name).strip()
+        if len(name) < 3:
+            continue
+        _, _, details = line.partition(":")
+        values = [name]
+        values.extend(technology for technology in KNOWN_TECHNOLOGIES if _contains(details or line, technology))
+        evidence.append((name, details.strip() or line, list(dict.fromkeys(values))))
+    if evidence:
+        return evidence
+
     evidence = []
     for line in _section_lines(resume_text, "projects"):
         if len(line) < 3:
@@ -137,7 +158,7 @@ def generate_interview_questions(
     resume_lower = resume_text.lower()
     matched_lower = {skill.lower() for skill in (matched_skills or [])}
 
-    for name, details, evidence in _project_evidence(resume_text):
+    for name, details, evidence in _project_evidence(resume_text, resume_evidence):
         _add_question(questions, f"Explain the {name} project mentioned on your resume. What problem did it address?", "Project", "resume", evidence, any(item.lower() in matched_lower for item in evidence), 100)
         if details != name:
             _add_question(questions, f"What implementation decisions did you make in the {name} project based on its described technologies or approach?", "Project deep-dive", "resume", evidence, any(item.lower() in matched_lower for item in evidence), 92)

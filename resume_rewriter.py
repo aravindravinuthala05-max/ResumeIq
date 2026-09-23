@@ -57,8 +57,10 @@ class RuleBasedRewriteProvider(RewriteProvider):
         matched_skills, missing_skills = _skill_context(resume_text, job_description, analysis)
         evidence = _build_evidence(resume_text, analysis, matched_skills, missing_skills)
         rewrites = []
+        unchanged_sections = []
 
         for section, lines in sections.items():
+            section_rewrites = []
             for line in lines:
                 improved = _rewrite_line(line, section)
                 if section == "skills":
@@ -68,7 +70,7 @@ class RuleBasedRewriteProvider(RewriteProvider):
                 if not improved or improved == line:
                     continue
                 keyword_evidence = _keyword_evidence(line, resume_text, matched_skills, missing_skills, evidence)
-                rewrites.append({
+                section_rewrites.append({
                     "section": section,
                     "original": line,
                     "rewritten": improved,
@@ -79,11 +81,19 @@ class RuleBasedRewriteProvider(RewriteProvider):
                     "safety_issues": [],
                     "provider": self.name,
                 })
+            rewrites.extend(section_rewrites)
+            if lines and not section_rewrites:
+                unchanged_sections.append({
+                    "section": section,
+                    "current_text": "\n".join(lines),
+                    "fact_safe": True,
+                })
 
         return {
             "provider": self.name,
             "mode": "deterministic_fallback",
             "rewrites": rewrites,
+            "unchanged_sections": unchanged_sections,
             "missing_keywords": [
                 skill for skill in missing_skills
                 if not _contains_skill(resume_text, skill)
@@ -95,7 +105,7 @@ class RuleBasedRewriteProvider(RewriteProvider):
             "message": (
                 "These wording improvements use only facts already present in the resume. "
                 "No external AI provider is configured."
-            ) if rewrites else "No supported rewrite candidates were found in the resume.",
+            ) if rewrites else "No improvement required. Your current resume wording is retained.",
         }
 
 

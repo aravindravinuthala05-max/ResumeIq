@@ -26,6 +26,8 @@ def test_result_template_contains_unified_dashboard_sections():
     assert "Review improvements" in template
     assert "Open rewriter" in template
     assert "Prepare interview" in template
+    for term in ("ATS / JD Match", "Skills Intelligence", "Semantic Job Match", "Career Eligibility", "Smart Insights", "Resume Rewriter", "Interview Coach"):
+        assert term in template
 
 
 def test_result_script_supports_empty_states_and_structured_metadata():
@@ -38,4 +40,7 @@ def test_result_script_supports_empty_states_and_structured_metadata():
     assert "recommendation_details" in script
     assert "No recommendations available." in script
     assert "No interview questions available." in script
-    assert "No supported rewrite candidates were found" in script
+    assert "No improvement required." in script
+    assert "Current Text" in script
+    assert "action_target" in script
+    assert "careerEligibilitySummary" in script

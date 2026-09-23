@@ -2467,6 +2467,23 @@ h1, h2, h3, .logo, .btn { font-family: 'Poppins', 'Inter', sans-serif; }
 .light-mode .about-close { background: var(--about-close-bg); color: var(--about-close-color); }
 .light-mode .about-modal-card p { color: var(--about-modal-copy); }
 .light-mode .about-modal-card .about-developer { color: var(--text-primary); }
+
+.semantic-matches { display: grid; gap: .8rem; margin-top: 1rem; }
+.semantic-match { padding: 1rem; border: 1px solid var(--surface-border); border-radius: 14px; background: var(--surface-overlay); }
+.semantic-match h3 { margin: .55rem 0; font-size: 1rem; }
+.semantic-match p { margin: .4rem 0 0; }
+.semantic-label { display: inline-block; padding: .22rem .55rem; border-radius: 999px; background: rgba(34, 211, 238, .14); color: var(--ai-cyan); font-size: .77rem; font-weight: 700; }
+.semantic-meta { color: var(--text-muted); font-size: .88rem; }
+.interview-roadmap { display: grid; gap: .5rem; margin: .8rem 0; }
+.coach-roadmap { display: flex; gap: .7rem; padding: .65rem; border: 1px solid var(--surface-border); border-radius: 10px; }
+.coach-roadmap span { color: var(--text-muted); }
+.question-item summary { cursor: pointer; }
+.eligibility-list { display:grid; gap:.7rem; margin-top:1rem; }
+.eligibility-item { padding:.85rem; border:1px solid var(--surface-border); border-radius:12px; }
+.eligibility-item > span { margin-left:.5rem; font-weight:700; }
+.eligibility-summary { display:flex; flex-wrap:wrap; gap:.7rem; margin:.8rem 0; font-weight:700; color:var(--text-muted); }
+.recommendation-link { margin-top:.7rem; font-size:.85rem; }
+.eligibility-supported { border-left:4px solid #22c55e; }.eligibility-conflict { border-left:4px solid #ef4444; }.eligibility-not_evidenced { border-left:4px solid #f59e0b; }
 @keyframes modal-rise { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
 @media (max-width: 700px) {

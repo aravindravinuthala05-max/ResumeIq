@@ -78,8 +78,8 @@ def test_certifications_and_achievements_keep_existing_no_candidate_state():
 
     assert certification["rewrites"] == []
     assert achievement["rewrites"] == []
-    assert "No supported rewrite candidates" in certification["message"]
-    assert "No supported rewrite candidates" in achievement["message"]
+    assert "No improvement required" in certification["message"]
+    assert "No improvement required" in achievement["message"]
 
 
 def test_multi_section_rewrites_keep_original_text_and_source_section():
@@ -110,7 +110,12 @@ def test_clear_section_keeps_existing_no_change_behavior():
     result = rewrite_resume("SUMMARY\nExperienced Python developer.", "Python AWS")
 
     assert result["rewrites"] == []
-    assert "No supported rewrite candidates" in result["message"]
+    assert result["message"] == "No improvement required. Your current resume wording is retained."
+    assert result["unchanged_sections"] == [{
+        "section": "summary",
+        "current_text": "Experienced Python developer.",
+        "fact_safe": True,
+    }]
 
 
 def test_exact_jd_only_safety_example_never_claims_missing_technologies():

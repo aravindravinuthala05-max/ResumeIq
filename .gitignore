@@ -17,6 +17,10 @@ uploads/*
 .coverage
 htmlcov/
 
+# Hugging Face / Sentence Transformers model cache (stored outside this repo)
+.cache/
+hf_cache/
+
 # IDE/editor files
 .vscode/
 .idea/

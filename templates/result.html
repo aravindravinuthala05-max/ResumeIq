@@ -16,6 +16,8 @@
         <a href="#strengths-section">Strengths</a>
         <a href="#priority-improvements">Priority Improvements</a>
         <a href="#skills-section">Skills</a>
+        <a href="#semantic-match-section">Semantic Job Match</a>
+        <a href="#career-eligibility-section">Career Eligibility</a>
         <a href="#rewriter-section">Rewriter</a>
         <a href="#interview-section">Interview</a>
         <a href="#download-report">Download Report</a>
@@ -90,7 +92,7 @@
             <div class="score-info">
                 <p class="section-kicker">ATS / JD Match</p>
                 <h2 id="scoreStatus">Analyzing...</h2>
-                <p id="scoreDescription"></p>
+                <p id="scoreDescription">Deterministic keyword and requirement matching used by the existing ATS engine.</p>
             </div>
         </div>
         <div id="detailed-analysis" class="score-breakdown">
@@ -167,7 +169,7 @@
     <section id="skills-section" class="dashboard-section skills-section" data-result-view="details" data-section="skills" aria-labelledby="skillsHeading">
         <div class="section-card">
             <p class="section-kicker">Confirmed and missing alignment</p>
-            <h2 id="skillsHeading"><i class="fas fa-tags"></i> Skills</h2>
+            <h2 id="skillsHeading"><i class="fas fa-tags"></i> Skills Intelligence</h2>
             <div class="skills-columns">
                 <div>
                     <h3 class="skills-subheading"><i class="fas fa-file-lines"></i> Resume Skills</h3>
@@ -190,6 +192,19 @@
         </div>
     </section>
 
+    <section id="semantic-match-section" class="dashboard-section" data-result-view="details" data-section="semantic" aria-labelledby="semanticMatchHeading">
+        <div class="section-card">
+            <p class="section-kicker">Evidence-backed local NLP</p>
+            <h2 id="semanticMatchHeading"><i class="fas fa-brain"></i> Semantic Job Match</h2>
+            <p class="skills-helper">Related language found through local semantic similarity. Related evidence does not create a new resume skill.</p>
+            <div id="semanticMatches" class="semantic-matches" aria-live="polite"></div>
+        </div>
+    </section>
+
+    <section id="career-eligibility-section" class="dashboard-section" data-result-view="details" aria-labelledby="eligibilityHeading">
+        <div class="section-card"><p class="section-kicker">Evidence-based requirement comparison</p><h2 id="eligibilityHeading"><i class="fas fa-graduation-cap"></i> Career Eligibility</h2><p class="skills-helper">Explicit JD eligibility requirements compared with matching resume evidence. Missing information is shown as not evidenced in resume.</p><div id="careerEligibilitySummary" class="eligibility-summary"></div><div id="careerEligibility" class="eligibility-list"></div></div>
+    </section>
+
     <section id="rewriter-section" class="dashboard-section rewriter-section" data-result-view="details" data-section="rewriter">
         <div class="section-card">
             <div class="rewriter-heading">
@@ -207,8 +222,9 @@
 
     <section id="interview-section" class="dashboard-section interview-section" data-result-view="details" data-section="interview">
         <div class="section-card">
-            <p class="section-kicker">Prepare with your actual resume</p>
-            <h2><i class="fas fa-microphone-alt"></i> Interview Preparation</h2>
+            <p class="section-kicker">Evidence-grounded preparation using your actual resume</p>
+            <h2><i class="fas fa-microphone-alt"></i> Interview Coach</h2>
+            <div id="interviewRoadmap" class="interview-roadmap"></div>
             <div id="interviewQuestions" class="questions-list"></div>
         </div>
     </section>
@@ -216,7 +232,7 @@
     <section id="recommendations-section" class="dashboard-section recommendations-section" data-result-view="details" data-section="insights" aria-labelledby="recommendationsHeading">
         <div class="section-card">
             <p class="section-kicker">Additional guidance</p>
-            <h2 id="recommendationsHeading"><i class="fas fa-lightbulb"></i> Remaining Recommendations</h2>
+            <h2 id="recommendationsHeading"><i class="fas fa-lightbulb"></i> Smart Insights</h2>
             <div id="recommendations" class="recommendations-list"></div>
         </div>
     </section>

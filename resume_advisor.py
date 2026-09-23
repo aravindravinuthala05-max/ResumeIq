@@ -30,6 +30,29 @@ def generate_suggestions(
     Returns:
         list: Prioritized recommendations
     """
+    # Legacy callers still receive useful guidance, but it must obey the same
+    # evidence rules as the structured advisor below.  In particular, never
+    # turn a JD keyword into a claim that the candidate has used it.
+    missing_skills = missing_skills if isinstance(missing_skills, list) else []
+    matched_skills = matched_skills if isinstance(matched_skills, list) else []
+    formatting_issues = formatting_issues if isinstance(formatting_issues, list) else []
+    sections_present = sections_present if isinstance(sections_present, dict) else {}
+    suggestions = [
+        f"{skill} is not evidenced in your resume. Learn the fundamentals and add it only after gaining genuine, supportable experience."
+        for skill in missing_skills
+    ]
+    if achievements_info and achievements_info.get("quantified_achievements", 0) == 0:
+        suggestions.append("Add a measurable result only if you can verify it from your actual work; do not estimate or invent one.")
+    if formatting_issues:
+        suggestions.append(f"Formatting: {formatting_issues[0]}")
+    if sections_present and not sections_present.get("Summary", False):
+        suggestions.append("Add a concise summary using only your verified background and target-role alignment.")
+    if matched_skills:
+        suggestions.append("Keep matched skills connected to the project or experience where you actually used them.")
+    return suggestions or ["No additional action is required based on the available resume evidence."]
+
+    # Retained below only as historical reference for a future legacy API
+    # migration; execution intentionally ends at the evidence-grounded return.
     
     suggestions = []
     

@@ -41,6 +41,7 @@ Resume review is often slow and difficult to verify. Candidates need to know whi
 - Rule-based, fact-preserving Resume Rewriter.
 - Resume-grounded Interview Preparation with JD-gap questions.
 - Resume Health Summary.
+- Local semantic job matching using the cached `sentence-transformers/all-MiniLM-L6-v2` model.
 - Responsive continuous dashboard with secondary Resume Details.
 - Backend-generated PDF report.
 - Empty and malformed-input handling.
@@ -116,6 +117,16 @@ Current score categories are Skills 40, Projects 15, Experience 15, Education 10
 
 The system reports skills found in both the resume and JD as matched. JD requirements not supported by resume text remain missing. A missing skill is never presented as a skill the candidate already possesses.
 
+## Career Eligibility
+
+Career Eligibility separately compares only explicit, structured JD academic or career requirements with section-provenanced resume evidence. It reports `SUPPORTED`, `CONFLICT`, or `NOT_EVIDENCED`; missing information is never treated as ineligibility. It does not alter ATS scoring or use semantic similarity as eligibility proof.
+
+## Local Semantic Job Match
+
+When the locally provisioned `sentence-transformers/all-MiniLM-L6-v2` model is available, ResumeIQ compares JD requirement phrases with existing evidence-backed resume text. It can label related evidence where wording differs, but never adds a resume skill, changes a missing skill, or changes the deterministic ATS score. Each result preserves the source evidence and section. No hosted AI API, LLM, or training dataset is used.
+
+The model is intentionally loaded from the local cache only. Provision it once during deployment with the environment online, then run ResumeIQ normally; if it is unavailable, the semantic panel shows an unavailable state while all deterministic features continue to work.
+
 ## Resume Evidence
 
 `resume_evidence.py` records values with their type, section, source text, and source metadata where supported. Evidence includes skills, technologies, projects, experience, education, certifications, achievements, languages, metrics, and dates. This evidence is used to keep recommendations, rewrites, and interview questions grounded.
@@ -141,7 +152,7 @@ The Rewriter is a local deterministic fallback. It improves wording, formatting,
 
 ## Interview Preparation
 
-`interview_generator.py` produces structured questions from project, experience, technology, education, certification, achievement, JD-gap, and behavioral signals. Resume questions carry resume evidence. Missing JD requirements produce clarification questions rather than questions that assume unsupported experience.
+`interview_generator.py` continues to produce deterministic, structured questions from project, experience, technology, education, certification, achievement, JD-gap, and behavioral signals. The additive Interview Coach layer provides evidence-grounded reasons, preparation topics, answer frameworks, follow-ups, and a concise roadmap. Local semantic NLP can highlight related evidence, but never turns a JD-only skill into a resume fact. Missing JD requirements remain preparation gaps rather than assumed experience.
 
 ## Resume Health Summary
 
@@ -157,7 +168,7 @@ No additional score or predictive model is introduced.
 
 ## PDF Report Generation
 
-`POST /generate_pdf` receives the existing structured analysis payload and creates a ReportLab PDF. The report contains clear headings for Resume Overview, ATS / JD Match, Strengths, Priority Improvements, Skills, Interview Preparation, and supporting analysis. Rewriter content is not included because it is generated separately and is not part of the static PDF contract.
+`POST /generate_pdf` receives the existing structured analysis payload and creates a ReportLab PDF. The report contains Resume Overview, ATS / JD Match, score breakdown, Skills Intelligence, Semantic Job Match (clearly marked as relevance only), Career Eligibility with its three evidence states, Smart Insights, Interview Preparation, the Interview Coach Preparation Roadmap, and existing resume details. Rewriter content is not included because it is generated separately and is not part of the static PDF contract.
 
 PDF values are escaped before ReportLab parsing, and empty sections use a readable fallback message.
 
@@ -187,11 +198,12 @@ Errors are returned as concise JSON responses for API paths and readable message
 - PDF values are XML-escaped before ReportLab parsing.
 - JD-only skills are not converted into resume evidence.
 - Rule-based rewriting preserves factual boundaries.
+- Semantic signals are evidence pointers, not resume facts or skill claims.
 - Resume text is processed as data; it is never executed.
 
 ## Testing
 
-The current checkpoint is **134 tests passed, 0 failed**. Coverage includes pipeline integration, analyzers, edge-case resumes, evidence, advisor, rewriter safety, interview generation, Skills Intelligence, Resume Health, PDF output, malformed requests, oversized uploads, and hostile PDF values.
+The current test checkpoint is maintained by the full `pytest -q` suite. Coverage includes pipeline integration, analyzers, edge-case resumes, evidence, advisor, rewriter safety, interview generation and coaching, Skills Intelligence, Semantic Job Match, Career Eligibility, PDF output, malformed requests, oversized uploads, and hostile PDF values.
 
 See [docs/TESTING.md](docs/TESTING.md) for the verified test categories and commands.
 

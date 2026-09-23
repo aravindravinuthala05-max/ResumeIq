@@ -24,6 +24,7 @@ from education_analyzer import analyze_education
 from experience_analyzer import analyze_experience
 from formatting_analyzer import analyze_formatting
 from interview_generator import generate_interview_questions
+from interview_coach import build_interview_coach
 from language_analyzer import analyze_languages
 from project_analyzer import analyze_projects
 from resume_advisor import generate_advice
@@ -32,6 +33,9 @@ from resume_evidence import build_resume_evidence
 from resume_rewriter import rewrite_resume
 from score_engine import calculate_weighted_ats_score
 from section_detector import detect_resume_sections
+from semantic_matcher import extract_jd_requirements, match_requirements_to_evidence
+from eligibility_requirements import extract_eligibility_requirements
+from career_eligibility import evaluate_career_eligibility
 
 
 app = Flask(__name__)
@@ -95,6 +99,17 @@ def build_analysis_result(resume_text, job_description, resume_name):
         sections,
         formatting,
     )
+    semantic_result = match_requirements_to_evidence(
+        extract_jd_requirements(job_description),
+        resume_evidence,
+        exact_requirements=ats_result["matched_skills"],
+    )
+    career_eligibility = evaluate_career_eligibility(extract_eligibility_requirements(job_description), resume_evidence)
+    jd_representation = {
+        "skills": list(dict.fromkeys([str(item).split(" (", 1)[0] for item in ats_result["matched_skills"] + ats_result["missing_skills"]])),
+        "semantic_requirements": extract_jd_requirements(job_description),
+        "eligibility_requirements": extract_eligibility_requirements(job_description),
+    }
 
     advice = generate_advice(
         missing_skills=ats_result["missing_skills"],
@@ -107,6 +122,11 @@ def build_analysis_result(resume_text, job_description, resume_name):
         job_description=job_description,
     )
     suggestions = advice["suggestions"]
+    for recommendation in advice["recommendations"]:
+        if recommendation.get("source") == "job_description":
+            recommendation.update({"action_type": "review_skills", "action_target": "skills-section", "action_label": "Review Skills Intelligence"})
+        elif recommendation.get("section", "").casefold() in {"formatting", "resume"}:
+            recommendation.update({"action_type": "open_rewriter", "action_target": "rewriter-section", "action_label": "Open Resume Rewriter"})
     interview_questions = generate_interview_questions(
         projects,
         experience,
@@ -119,6 +139,7 @@ def build_analysis_result(resume_text, job_description, resume_name):
         achievements_info=achievements,
         resume_evidence=resume_evidence,
     )
+    interview_coach = build_interview_coach(interview_questions, semantic_result, ats_result["matched_skills"], ats_result["missing_skills"])
 
     return {
         "success": True,
@@ -139,9 +160,13 @@ def build_analysis_result(resume_text, job_description, resume_name):
         "achievements": achievements,
         "formatting": formatting,
         "resume_evidence": resume_evidence,
+        "semantic_matches": semantic_result,
+        "career_eligibility": career_eligibility,
+        "jd_representation": jd_representation,
         "suggestions": suggestions[:10],
         "recommendation_details": advice["recommendations"][:15],
         "interview_questions": interview_questions[:15],
+        "interview_coach": interview_coach,
         "status": ats_result["status"],
     }
 
@@ -253,6 +278,50 @@ def _pdf_value(value):
     return escape_xml(str(value).encode("ascii", "replace").decode("ascii"))
 
 
+def _pdf_fields(**fields):
+    """Keep report records user-facing; never render analyzer payload objects."""
+    return {label: value for label, value in fields.items() if value not in (None, "", [], {})}
+
+
+def _pdf_recommendation(item):
+    return _pdf_fields(
+        Title=item.get("title"),
+        Recommendation=item.get("description"),
+        Priority=item.get("priority"),
+        Evidence=item.get("evidence"),
+    )
+
+
+def _pdf_semantic_match(item):
+    return _pdf_fields(
+        Requirement=item.get("requirement"),
+        Relevance=item.get("label"),
+        **{"Resume evidence": item.get("evidence"), "Relevant resume section": item.get("section")},
+    )
+
+
+def _pdf_eligibility_requirement(item):
+    return _pdf_fields(
+        Requirement=item.get("requirement"),
+        Status=item.get("status"),
+        Evidence=item.get("resume_evidence"),
+        **{"Relevant resume section": item.get("evidence_section")},
+        Reason=item.get("reason"),
+    )
+
+
+def _pdf_interview_question(item):
+    return _pdf_fields(
+        Question=item.get("question"),
+        Focus=item.get("category"),
+        Evidence=item.get("evidence"),
+    )
+
+
+def _pdf_roadmap_item(item):
+    return _pdf_fields(Phase=item.get("title"), **{"Preparation topics": item.get("topics")})
+
+
 def generate_pdf_report(data):
     """Build a true PDF with the report sections, rather than mislabeled HTML."""
     output = BytesIO()
@@ -302,17 +371,17 @@ def generate_pdf_report(data):
         if isinstance(item, dict)
     ]
     strengths = [
-        item for item in recommendation_details
+        _pdf_recommendation(item) for item in recommendation_details
         if item.get("source") == "resume_evidence"
         and item.get("jd_relevance")
         and item.get("evidence")
     ]
     priority_improvements = [
-        item for item in recommendation_details
+        _pdf_recommendation(item) for item in recommendation_details
         if str(item.get("priority", "")).upper() in {"HIGH", "MEDIUM"}
     ]
     remaining_recommendations = [
-        item for item in recommendation_details
+        _pdf_recommendation(item) for item in recommendation_details
         if str(item.get("priority", "")).upper() not in {"HIGH", "MEDIUM"}
     ]
     sections = (
@@ -326,11 +395,25 @@ def generate_pdf_report(data):
             "matched_skills": data.get("matched_skills"),
             "missing_skills": data.get("missing_skills"),
         }),
+        ("Smart Insights", "Evidence-backed strengths and practical improvements for this resume."),
         ("Strengths", strengths),
         ("Priority Improvements", priority_improvements),
-        ("Skills", {
+        ("Skills Intelligence", {
             "matched": data.get("matched_skills"),
             "missing_jd_skills": data.get("missing_skills"),
+        }),
+        ("Semantic Job Match (semantic relevance only)", {
+            "notice": "Related language is preparation context only and does not create a resume skill.",
+            "matches": [_pdf_semantic_match(item) for item in (data.get("semantic_matches") or {}).get("matches", []) if isinstance(item, dict)],
+        }),
+        ("Career Eligibility", {
+            "summary": (
+                f"SUPPORTED: {(data.get('career_eligibility') or {}).get('supported_count', 0)}; "
+                f"CONFLICT: {(data.get('career_eligibility') or {}).get('conflict_count', 0)}; "
+                f"NOT_EVIDENCED: {(data.get('career_eligibility') or {}).get('not_evidenced_count', 0)}. "
+                "NOT_EVIDENCED means the resume does not contain enough evidence to determine the requirement."
+            ),
+            "requirements": [_pdf_eligibility_requirement(item) for item in (data.get("career_eligibility") or {}).get("requirements", []) if isinstance(item, dict)],
         }),
         ("Remaining Recommendations", remaining_recommendations or data.get("suggestions")),
         ("Contact", data.get("contact")),
@@ -340,7 +423,8 @@ def generate_pdf_report(data):
         ("Certifications", data.get("certifications")),
         ("Achievements", data.get("achievements")),
         ("Languages", data.get("languages")),
-        ("Interview Preparation", data.get("interview_questions")),
+        ("Interview Preparation", [_pdf_interview_question(item) for item in data.get("interview_questions", []) if isinstance(item, dict)]),
+        ("Interview Coach Preparation Roadmap", [_pdf_roadmap_item(item) for item in (data.get("interview_coach") or {}).get("roadmap", []) if isinstance(item, dict)]),
         ("Formatting Analysis", data.get("formatting")),
     )
     for title, value in sections:

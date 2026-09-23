@@ -134,6 +134,33 @@ function renderItems(id, items, emptyMessage) {
         : `<p>${escapeHtml(emptyMessage)}</p>`);
 }
 
+function displaySemanticMatches(result) {
+    const target = document.getElementById('semanticMatches');
+    if (!target) return;
+    if (!result || result.available === false) {
+        setHtml('semanticMatches', `<p>${escapeHtml(result?.reason || 'Local semantic analysis is unavailable. Your deterministic analysis remains available.')}</p>`);
+        return;
+    }
+    const matches = asArray(result.matches);
+    if (!matches.length) {
+        setHtml('semanticMatches', '<p>No semantic requirement comparisons are available for this job description.</p>');
+        return;
+    }
+    setHtml('semanticMatches', matches.map(item => {
+        const evidence = item.evidence
+            ? `<p><strong>Resume evidence:</strong> ${escapeHtml(item.evidence)}</p><p class="semantic-meta">${escapeHtml(item.section || 'resume')} · ${escapeHtml(item.type || 'evidence')} · ${(Number(item.similarity || 0) * 100).toFixed(0)}% relevance</p>`
+            : '<p class="semantic-meta">No meaningful evidence relationship detected.</p>';
+        return `<article class="semantic-match"><span class="semantic-label">${escapeHtml(item.label || 'No Meaningful Match')}</span><h3>${escapeHtml(item.requirement || 'Job requirement')}</h3>${evidence}</article>`;
+    }).join(''));
+}
+
+function displayCareerEligibility(payload) {
+    const requirements = asArray(payload?.requirements);
+    if (!requirements.length) { setHtml('careerEligibilitySummary', ''); setHtml('careerEligibility', '<p>No explicit career or academic eligibility requirements were detected.</p>'); return; }
+    setHtml('careerEligibilitySummary', `<span>Supported: ${Number(payload?.supported_count || 0)}</span><span>Conflicts: ${Number(payload?.conflict_count || 0)}</span><span>Not evidenced: ${Number(payload?.not_evidenced_count || 0)}</span>`);
+    setHtml('careerEligibility', requirements.map(item => `<article class="eligibility-item eligibility-${escapeHtml(String(item.status || '').toLowerCase())}"><strong>${escapeHtml(item.requirement || 'Requirement')}</strong><span>${escapeHtml(item.status === 'NOT_EVIDENCED' ? 'Not evidenced in resume' : item.status || 'Unknown')}</span><p><strong>Resume evidence:</strong> ${escapeHtml(item.resume_evidence || 'Not evidenced in resume')}</p><p>${escapeHtml(item.reason || '')}</p></article>`).join(''));
+}
+
 function displayContact(contact) {
     if (!contact || Object.keys(contact).length === 0) {
         setHtml('contactInfo', '<p>No contact information found.</p>');
@@ -267,6 +294,7 @@ function recommendationMarkup(item) {
         <p>${escapeHtml(item.description || '')}</p>
         ${asArray(item.evidence).length ? `<div class="recommendation-evidence"><strong>Evidence:</strong> ${escapeHtml(item.evidence.join(', '))}</div>` : ''}
         ${action ? `<div class="recommendation-action"><strong>Next action:</strong> ${escapeHtml(action)}</div>` : ''}
+        ${item.action_target ? `<button type="button" class="overview-action recommendation-link" data-action-target="${escapeHtml(item.action_target)}">${escapeHtml(item.action_label || 'Review next step')}</button>` : ''}
     </article>`;
 }
 
@@ -317,6 +345,18 @@ function displayInterviewQuestions(questions) {
     renderItems('interviewQuestions', items, 'No interview questions available.');
 }
 
+function displayInterviewCoach(coach, legacyQuestions) {
+    const questions = asArray(coach?.questions);
+    const roadmap = asArray(coach?.roadmap);
+    setHtml('interviewRoadmap', roadmap.length ? `<h3>Preparation Roadmap</h3>${roadmap.map(item => `<div class="coach-roadmap"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(asArray(item.topics).join(', ') || 'Review your factual resume evidence.')}</span></div>`).join('')}` : '');
+    const source = questions.length ? questions : legacyQuestions;
+    const items = asArray(source).map((item, index) => {
+        const evidence = asArray(item.evidence);
+        return `<details class="question-item" ${index < 3 ? 'open' : ''}><summary><span class="question-number">${index + 1}</span>${escapeHtml(item.question)} <span class="question-label">${escapeHtml(item.category || 'Interview')}</span><span class="question-label">${escapeHtml(item.difficulty || '')}</span><span class="question-label">${escapeHtml(item.priority || '')}</span></summary><p><strong>Why this question:</strong> ${escapeHtml(item.reason || 'Grounded in available interview preparation data.')}</p>${evidence.length ? `<p><strong>Evidence:</strong> ${escapeHtml(evidence.join(', '))}</p>` : ''}<p><strong>What to prepare:</strong> ${escapeHtml(asArray(item.what_to_prepare).join(', '))}</p>${asArray(item.what_to_learn_first).length ? `<p><strong>What to learn first:</strong> ${escapeHtml(item.what_to_learn_first.join(' '))}</p>` : ''}${asArray(item.how_to_practise).length ? `<p><strong>How to practise:</strong> ${escapeHtml(item.how_to_practise.join(' '))}</p>` : ''}${asArray(item.interview_preparation).length ? `<p><strong>How to prepare for the interview:</strong> ${escapeHtml(item.interview_preparation.join(' '))}</p>` : ''}<p><strong>Answer structure:</strong> ${escapeHtml(asArray(item.answer_structure).join(' '))}</p>${asArray(item.follow_ups).length ? `<p><strong>Follow-ups:</strong> ${escapeHtml(item.follow_ups.join(' '))}</p>` : ''}</details>`;
+    });
+    renderItems('interviewQuestions', items, 'No interview questions available.');
+}
+
 function displayFormatting(formatting) {
     if (!formatting || Object.keys(formatting).length === 0) {
         setHtml('formattingInfo', '<p>No formatting analysis available.</p>');
@@ -354,11 +394,12 @@ function rewriteSectionLabel(section) {
 
 function displayRewrites(payload) {
     rewriteItems = asArray(payload.rewrites).filter(item => item && typeof item === 'object');
+    const unchangedSections = asArray(payload.unchanged_sections).filter(item => item && typeof item === 'object');
     setText('healthRewriteCount', String(rewriteItems.length));
     setText('rewriterProvider', payload.provider === 'rule_based' ? 'Local fallback' : (payload.provider || 'Provider'));
     if (!rewriteItems.length) {
-        setHtml('rewrites', '<p>No supported rewrite candidates were found in this resume.</p>');
-        setText('rewriterStatus', payload.message || 'No rewrite candidates are available.');
+        setHtml('rewrites', unchangedSections.length ? unchangedSections.map(item => `<article class="rewrite-item"><div class="rewrite-meta"><span class="rewrite-section-label">${escapeHtml(rewriteSectionLabel(item.section))}</span><span class="rewrite-safe rewrite-no-change"><i class="fas fa-circle-check"></i> No improvement required</span></div><div class="rewrite-copy rewrite-improved"><h3>Current Text</h3><p>${escapeHtml(String(item.current_text || ''))}</p></div></article>`).join('') : '<p>No improvement required.</p>');
+        setText('rewriterStatus', payload.message || 'No improvement required.');
         return;
     }
 
@@ -465,6 +506,8 @@ function displayResults(data) {
     displayTags('matchedSkills', data.matched_skills, 'No matched skills found.');
     displayTags('missingSkills', data.missing_skills, 'All required skills are present.', true);
     displayTags('evidenceSkills', evidenceSkills, 'No evidence-backed skills available.');
+    displaySemanticMatches(data.semantic_matches);
+    displayCareerEligibility(data.career_eligibility);
     displayContact(data.contact);
     displayEducation(data.education);
     displayExperience(data.experience);
@@ -473,7 +516,7 @@ function displayResults(data) {
     displayAchievements(data.achievements);
     displayLanguages(data.languages);
     displayRecommendations(data.suggestions, data.recommendation_details);
-    displayInterviewQuestions(data.interview_questions);
+    displayInterviewCoach(data.interview_coach, data.interview_questions);
     displayFormatting(data.formatting);
 }
 
@@ -534,6 +577,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', event => {
         const button = event.target.closest('[data-copy-rewrite]');
         if (button) copyRewrite(Number(button.dataset.copyRewrite), button);
+        const action = event.target.closest('[data-action-target]');
+        if (action) document.getElementById(action.dataset.actionTarget)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
     const storedData = sessionStorage.getItem('analysisData');

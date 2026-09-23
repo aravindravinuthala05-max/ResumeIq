@@ -106,3 +106,11 @@ def test_legacy_suggestions_remain_available():
     result = advice()
     assert isinstance(result["suggestions"], list)
     assert result["suggestions"]
+    assert all("30%" not in item and "$50K" not in item for item in result["suggestions"])
+
+
+def test_strong_content_does_not_receive_blanket_legacy_todos():
+    result = advice()
+    suggestions = " ".join(result["suggestions"])
+    assert "Add links" not in suggestions
+    assert "Keep your resume to 1 page" not in suggestions
