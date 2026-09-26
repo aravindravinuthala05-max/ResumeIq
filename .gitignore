@@ -11,6 +11,7 @@ __pycache__/
 # Uploaded resumes
 uploads/*
 !uploads/.gitkeep
+validation_resumes/
 
 # Test/cache files
 .pytest_cache/

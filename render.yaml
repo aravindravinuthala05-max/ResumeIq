@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: resumeiq
+    runtime: python
+    buildCommand: pip install -r requirements.txt && HF_HOME=/opt/render/project/src/.cache/huggingface python scripts/provision_semantic_model.py
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: HF_HOME
+        value: /opt/render/project/src/.cache/huggingface
